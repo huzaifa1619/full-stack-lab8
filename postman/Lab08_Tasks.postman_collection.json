@@ -1,0 +1,826 @@
+{
+  "info": {
+    "name": "Lab 08 Tasks",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000/api"
+    },
+    {
+      "key": "newCode",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "01 List courses",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
+              "pm.test(\"Body is a non-empty array\", () => { const b = pm.response.json(); pm.expect(b).to.be.an(\"array\"); pm.expect(b.length).to.be.above(0); });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/courses",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "courses"
+          ]
+        }
+      }
+    },
+    {
+      "name": "02 Course stats",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
+              "pm.test(\"Body has stats fields\", () => { const b = pm.response.json(); pm.expect(b).to.have.all.keys(\"totalCourses\",\"totalCredits\",\"overloaded\"); pm.expect(b.overloaded).to.be.a(\"boolean\"); });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/courses/stats",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "courses",
+            "stats"
+          ]
+        }
+      }
+    },
+    {
+      "name": "03 Get one course",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
+              "pm.test(\"Right course\", () => pm.expect(pm.response.json().code).to.eql(\"CS-101\"));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/courses/CS-101",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "courses",
+            "CS-101"
+          ]
+        }
+      }
+    },
+    {
+      "name": "04 Filter by department + sort + limit",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
+              "pm.test(\"One Computer Science course\", () => { const b = pm.response.json(); pm.expect(b).to.have.lengthOf(1); pm.expect(b[0].department).to.eql(\"Computer Science\"); });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/courses?department=Computer Science&sort=creditHours&order=desc&limit=1",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "courses"
+          ],
+          "query": [
+            {
+              "key": "department",
+              "value": "Computer Science"
+            },
+            {
+              "key": "sort",
+              "value": "creditHours"
+            },
+            {
+              "key": "order",
+              "value": "desc"
+            },
+            {
+              "key": "limit",
+              "value": "1"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "05 Create course (cleaned, saves newCode)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status is 201\", () => pm.response.to.have.status(201));",
+              "pm.test(\"Values cleaned by class-transformer\", () => { const b = pm.response.json(); pm.expect(b.code).to.eql(\"CS-420\"); pm.expect(b.title).to.eql(\"Compilers\"); pm.expect(b.tags).to.eql([\"theory\",\"core\"]); });",
+              "pm.collectionVariables.set(\"newCode\", pm.response.json().code);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"code\": \" cs-420 \",\n  \"title\": \"  Compilers \",\n  \"creditHours\": 3,\n  \"instructor\": \"Dr. Hamza Rauf\",\n  \"department\": \"Computer Science\",\n  \"tags\": [\n    \"Theory\",\n    \"CORE\"\n  ]\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/courses",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "courses"
+          ]
+        }
+      }
+    },
+    {
+      "name": "06 Get created course",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
+              "pm.test(\"Title is Compilers\", () => pm.expect(pm.response.json().title).to.eql(\"Compilers\"));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/courses/{{newCode}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "courses",
+            "{{newCode}}"
+          ]
+        }
+      }
+    },
+    {
+      "name": "07 Duplicate code -> 409",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status is 409\", () => pm.response.to.have.status(409));",
+              "pm.test(\"Conflict message\", () => pm.expect(pm.response.json().message).to.include(\"already exists\"));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"code\": \"CS-420\",\n  \"title\": \"Compilers\",\n  \"creditHours\": 3,\n  \"instructor\": \"Dr. Hamza Rauf\",\n  \"department\": \"Computer Science\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/courses",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "courses"
+          ]
+        }
+      }
+    },
+    {
+      "name": "08 Patch created course",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
+              "pm.test(\"Title updated, code kept\", () => { const b = pm.response.json(); pm.expect(b.title).to.eql(\"Compiler Design\"); pm.expect(b.code).to.eql(pm.collectionVariables.get(\"newCode\")); });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"title\": \"Compiler Design\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/courses/{{newCode}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "courses",
+            "{{newCode}}"
+          ]
+        }
+      }
+    },
+    {
+      "name": "09 Invalid course -> 400 (3 messages)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status is 400\", () => pm.response.to.have.status(400));",
+              "pm.test(\"details mention: code must look like CS-301 or CS-301L\", () => pm.expect(pm.response.json().details.join(' | ')).to.include(\"code must look like CS-301 or CS-301L\"));",
+              "pm.test(\"details mention: title must be at least 3 characters\", () => pm.expect(pm.response.json().details.join(' | ')).to.include(\"title must be at least 3 characters\"));",
+              "pm.test(\"details mention: creditHours must be at most 4\", () => pm.expect(pm.response.json().details.join(' | ')).to.include(\"creditHours must be at most 4\"));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"code\": \"CS3\",\n  \"title\": \"AI\",\n  \"creditHours\": 9,\n  \"instructor\": \"Dr. Hamza\",\n  \"department\": \"Data Science\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/courses",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "courses"
+          ]
+        }
+      }
+    },
+    {
+      "name": "10 creditHours as text -> 400",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status is 400\", () => pm.response.to.have.status(400));",
+              "pm.test(\"details mention: creditHours must be a whole number\", () => pm.expect(pm.response.json().details.join(' | ')).to.include(\"creditHours must be a whole number\"));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"code\": \"CS-421\",\n  \"title\": \"Compilers\",\n  \"creditHours\": \"3\",\n  \"instructor\": \"Dr. Hamza Rauf\",\n  \"department\": \"Computer Science\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/courses",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "courses"
+          ]
+        }
+      }
+    },
+    {
+      "name": "11 Extra property isAdmin -> 400",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status is 400\", () => pm.response.to.have.status(400));",
+              "pm.test(\"details mention: property isAdmin should not exist\", () => pm.expect(pm.response.json().details.join(' | ')).to.include(\"property isAdmin should not exist\"));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"code\": \"CS-422\",\n  \"title\": \"Compilers\",\n  \"creditHours\": 3,\n  \"instructor\": \"Dr. Hamza Rauf\",\n  \"department\": \"Computer Science\",\n  \"isAdmin\": true\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/courses",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "courses"
+          ]
+        }
+      }
+    },
+    {
+      "name": "12 Six tags -> 400",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status is 400\", () => pm.response.to.have.status(400));",
+              "pm.test(\"details mention: tags can have at most 5 items\", () => pm.expect(pm.response.json().details.join(' | ')).to.include(\"tags can have at most 5 items\"));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"code\": \"CS-423\",\n  \"title\": \"Compilers\",\n  \"creditHours\": 3,\n  \"instructor\": \"Dr. Hamza Rauf\",\n  \"department\": \"Computer Science\",\n  \"tags\": [\n    \"a\",\n    \"b\",\n    \"c\",\n    \"d\",\n    \"e\",\n    \"f\"\n  ]\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/courses",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "courses"
+          ]
+        }
+      }
+    },
+    {
+      "name": "13 minCredits=abc -> 400",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status is 400\", () => pm.response.to.have.status(400));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/courses?minCredits=abc",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "courses"
+          ],
+          "query": [
+            {
+              "key": "minCredits",
+              "value": "abc"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "14 sort=title -> 400",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status is 400\", () => pm.response.to.have.status(400));",
+              "pm.test(\"details mention: sort must be creditHours\", () => pm.expect(pm.response.json().details.join(' | ')).to.include(\"sort must be creditHours\"));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/courses?sort=title",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "courses"
+          ],
+          "query": [
+            {
+              "key": "sort",
+              "value": "title"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "15 Bad code abc -> 400 (not 404)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status is 400\", () => pm.response.to.have.status(400));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/courses/abc",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "courses",
+            "abc"
+          ]
+        }
+      }
+    },
+    {
+      "name": "16 Unknown course -> 404",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status is 404\", () => pm.response.to.have.status(404));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/courses/CS-999",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "courses",
+            "CS-999"
+          ]
+        }
+      }
+    },
+    {
+      "name": "17 Patch with code -> 400",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status is 400\", () => pm.response.to.have.status(400));",
+              "pm.test(\"details mention: property code should not exist\", () => pm.expect(pm.response.json().details.join(' | ')).to.include(\"property code should not exist\"));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"code\": \"CS-999\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/courses/{{newCode}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "courses",
+            "{{newCode}}"
+          ]
+        }
+      }
+    },
+    {
+      "name": "18 Delete created course -> 204",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status is 204\", () => pm.response.to.have.status(204));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/courses/{{newCode}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "courses",
+            "{{newCode}}"
+          ]
+        }
+      }
+    },
+    {
+      "name": "19 Deleted course is gone -> 404",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status is 404\", () => pm.response.to.have.status(404));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/courses/{{newCode}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "courses",
+            "{{newCode}}"
+          ]
+        }
+      }
+    },
+    {
+      "name": "20 Fee policy info",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
+              "pm.test(\"Policy and rate\", () => { const b = pm.response.json(); pm.expect(b.policy).to.be.oneOf([\"standard\",\"merit\"]); pm.expect(b.ratePerCreditHour).to.eql(5000); });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/fees/info",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "fees",
+            "info"
+          ]
+        }
+      }
+    },
+    {
+      "name": "21 Fee for BSCS-023",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
+              "pm.test(\"Total matches the active policy\", () => { const b = pm.response.json(); pm.expect(b.name).to.eql(\"Sara Ahmed\"); pm.expect(b.total).to.eql(b.policy === \"merit\" ? 30000 : 60000); });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/fees/BSCS-023?creditHours=12",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "fees",
+            "BSCS-023"
+          ],
+          "query": [
+            {
+              "key": "creditHours",
+              "value": "12"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "22 Fee without creditHours -> 400",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status is 400\", () => pm.response.to.have.status(400));",
+              "pm.test(\"details mention: creditHours must be a whole number\", () => pm.expect(pm.response.json().details.join(' | ')).to.include(\"creditHours must be a whole number\"));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/fees/BSCS-023",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "fees",
+            "BSCS-023"
+          ]
+        }
+      }
+    },
+    {
+      "name": "23 Fee for unknown student -> 404",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status is 404\", () => pm.response.to.have.status(404));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/fees/NOPE-000?creditHours=3",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "fees",
+            "NOPE-000"
+          ],
+          "query": [
+            {
+              "key": "creditHours",
+              "value": "3"
+            }
+          ]
+        }
+      }
+    }
+  ]
+}
